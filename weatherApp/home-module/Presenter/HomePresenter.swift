@@ -15,18 +15,18 @@ class HomePresenter: ViewToPresenterHomeProtocol {
         homeInteractor?.fetchWeather(lat: lat, lon: lon, completion: completion)
     }
     
-    func hourlyeWeathers(lat: String, lon: String, endDate: String, startDate: String, completion: @escaping (HourlyWeatherResult) -> Void) {
-        homeInteractor?.hourlyWeather(lat: lat, lon: lon, endDate: endDate, startDate: startDate, completion: completion)
+    func hourlyeWeathers(lat: String, lon: String, endDate: String, startDate: String) {
+        homeInteractor?.hourlyWeather(lat: lat, lon: lon, endDate: endDate, startDate: startDate)
     }
         
 }
 extension HomePresenter : InteractorToPresenterHomeProtocol {
-    func sendPresenterValue(weatherList: Array<WeatherData>) {
-        homeView?.sendViewValue(weatherList: weatherList)
+    func sendPresenterWeather(weatherList: Array<WeatherData>) {
+        homeView?.sendViewWeather(weatherList: weatherList)
     }
     
-    func sendPresenterValueSecond(hourlyList: Array<HourlyWeatherData>) {
-        homeView?.sendViewValueSecond(hourlyList: hourlyList)
+    func sendPresenterHourly(hourlyList: Array<HourlyWeatherData>) {
+        homeView?.sendViewValueHourly(hourlyList: hourlyList)
     }
     
     

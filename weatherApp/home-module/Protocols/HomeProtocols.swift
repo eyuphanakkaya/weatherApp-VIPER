@@ -11,20 +11,20 @@ protocol ViewToPresenterHomeProtocol {
     var homeInteractor: PresenterToInteractorHomeProtocol? {get set}
     var homeView: PresenterToViewHomeProtocol? {get set}
     func weather(lat: String, lon: String,completion: @escaping(WeatherResult)-> Void)
-    func hourlyeWeathers(lat: String,lon: String,endDate: String,startDate: String,completion: @escaping(HourlyWeatherResult)-> Void)
+    func hourlyeWeathers(lat: String,lon: String,endDate: String,startDate: String)
 }
 protocol PresenterToInteractorHomeProtocol {
     var interactorToPresenterProtocol : InteractorToPresenterHomeProtocol? {get set}
     func fetchWeather(lat: String, lon: String,completion: @escaping(WeatherResult)-> Void)
-    func hourlyWeather(lat: String,lon: String,endDate: String,startDate: String,completion: @escaping(HourlyWeatherResult)->Void)
+    func hourlyWeather(lat: String,lon: String,endDate: String,startDate: String)
 }
 protocol InteractorToPresenterHomeProtocol {
-    func sendPresenterValue(weatherList: Array<WeatherData>)
-    func sendPresenterValueSecond(hourlyList: Array<HourlyWeatherData>)
+    func sendPresenterWeather(weatherList: Array<WeatherData>)
+    func sendPresenterHourly(hourlyList: Array<HourlyWeatherData>)
 }
 protocol PresenterToViewHomeProtocol {
-    func sendViewValue(weatherList: Array<WeatherData>)
-    func sendViewValueSecond(hourlyList: Array<HourlyWeatherData>)
+    func sendViewWeather(weatherList: Array<WeatherData>)
+    func sendViewValueHourly(hourlyList: Array<HourlyWeatherData>)
 }
 protocol PresenterToRouterHomeProtocol {
     static func createModule(ref: HomeViewController)
