@@ -8,6 +8,9 @@
 import Foundation
 
 class HomePresenter: ViewToPresenterHomeProtocol {
+
+    
+    
     var homeInteractor: PresenterToInteractorHomeProtocol?
     var homeView: PresenterToViewHomeProtocol?
     

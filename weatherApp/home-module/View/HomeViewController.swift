@@ -10,24 +10,25 @@ import CoreLocation
 import Kingfisher
 
 class HomeViewController: UIViewController,CLLocationManagerDelegate {
-
+    
     // MARK: -  components
-    var selectedRow: IndexPath?
+   
     @IBOutlet weak var collectionView: UICollectionView!
-    @IBOutlet weak var highAndLowDegreeLabel: UILabel!
+    @IBOutlet weak var lowDegreeLabel: UILabel!
+    @IBOutlet weak var highDegreeLabel: UILabel!
     @IBOutlet weak var weatherValueLabel: UILabel!
     @IBOutlet weak var degreesLabel: UILabel!
     @IBOutlet weak var cityNameLabel: UILabel!
     @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var customViews: UIView!
     @IBOutlet weak var customCollectionView: UIView!
+    var isDegree = true
     var weatherLists = [WeatherData]()
     var hourlyLists = [HourlyWeatherData]()
     var locationManager = CLLocationManager()
     var homePresenter: ViewToPresenterHomeProtocol?
-    var todays = ""
-    var tomorrow = ""
-    
+    var selectedRow: IndexPath?
+    var dateFormatter = DateFormatter()
     // MARK: - lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -35,19 +36,74 @@ class HomeViewController: UIViewController,CLLocationManagerDelegate {
         fetchLocation()
         HomeRouter.createModule(ref: self)
     }
-    override func viewWillAppear(_ animated: Bool) {
+    
+    @IBAction func changeDegreeStatusButton(_ sender: Any) {
+        isDegree.toggle()
+        degreesLabel.text = isDegree ? "\(Int(weatherLists[0].temp)) C°" : "\(Int(celsiusToFahrenheit(Int(weatherLists[0].temp)))) F°"
+        highDegreeLabel.text = isDegree ? "H: \(Int(weatherLists[0].app_max_temp))°" : "H: \(Int(celsiusToFahrenheit(Int(weatherLists[0].app_max_temp))))°"
+        lowDegreeLabel.text = isDegree ? "L: \(Int(weatherLists[0].app_min_temp))°" : "L: \(Int(celsiusToFahrenheit(Int(weatherLists[0].app_min_temp))))°"
+        tableView.reloadData()
+        collectionView.reloadData()
         
+    }
+    func getTodayAndTomorrow() -> (today: String, tomorrow: String) {
+        let today = Date()
+        dateFormatter.dateFormat = "yyyy-MM-dd"
+        
+        let todayString = dateFormatter.string(from: today)
+
+        let calendar = Calendar.current
+
+        if let tomorrowDate = calendar.date(byAdding: .day, value: 1, to: today) {
+            let tomorrowString = dateFormatter.string(from: tomorrowDate)
+            return (todayString, tomorrowString)
+        } else {
+            fatalError("Yarın hesaplanamıyor.")
+        }
+    }
+
+    func celsiusToFahrenheit(_ celsius: Int) -> Int {
+        return (celsius * 9/5) + 32
+    }
+    func formatTime(_ dateString: String) -> String {
+        dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
+        if let date = dateFormatter.date(from: dateString) {
+            dateFormatter.dateFormat = "h a"
+            dateFormatter.amSymbol = "AM"
+            dateFormatter.pmSymbol = "PM"
+            
+            let formattedTime = dateFormatter.string(from: date)
+            return formattedTime
+        }
+        
+        return ""
+    }
+    func backgroundValue() {
+        DispatchQueue.main.async {
+            if self.weatherLists[0].weather.description.lowercased().contains("clouds") {
+                self.view.backgroundColor = #colorLiteral(red: 0.1116948351, green: 0.1420827508, blue: 0.1714244187, alpha: 1)
+            } else if self.weatherLists[0].weather.description.lowercased().contains("rain"){
+                self.view.backgroundColor = #colorLiteral(red: 0.0683510676, green: 0.2588295937, blue: 0.5978077054, alpha: 1)
+                self.view.backgroundColor = #colorLiteral(red: 0.1922393739, green: 0.6801093221, blue: 0.8735067844, alpha: 1)
+            } else if self.weatherLists[0].weather.description.lowercased().contains("snow") {
+                self.view.backgroundColor = #colorLiteral(red: 0.1116948351, green: 0.1420827508, blue: 0.1714244187, alpha: 1)
+            } else if self.weatherLists[0].weather.description.lowercased().contains("sleet") {
+                self.view.backgroundColor = #colorLiteral(red: 0.1922393739, green: 0.6801093221, blue: 0.8735067844, alpha: 1)
+            } else {
+                self.view.backgroundColor = #colorLiteral(red: 0.1922393739, green: 0.6801093221, blue: 0.8735067844, alpha: 1)
+            }
+        }
     }
     // MARK: - weather api caller
     func fetchWeatherApi(lat: String,lon: String) {
         homePresenter?.weather(lat: lat, lon: lon, completion: { [self] result in
             cityNameLabel.text = result.city_name
-            for x in result.data {
-                degreesLabel.text = "\(Int(x.temp))°"
-                highAndLowDegreeLabel.text = "H: \(Int(x.app_max_temp)),L: \(Int(x.app_min_temp))"
-                weatherValueLabel.text = x.weather.description
-                homePresenter?.hourlyeWeathers(lat: lat, lon: lon, endDate: "2023-11-20", startDate: "2023-11-19")
-            }
+            degreesLabel.text = "\(Int(result.data[0].temp)) C°"
+            highDegreeLabel.text = "H: \(Int(result.data[0].app_max_temp))°"
+            lowDegreeLabel.text = "L: \(Int(result.data[0].app_min_temp))°"
+            weatherValueLabel.text = result.data[0].weather.description
+            homePresenter?.hourlyeWeathers(lat: lat, lon: lon, endDate: getTodayAndTomorrow().tomorrow, startDate: getTodayAndTomorrow().today)
+            backgroundValue()
         })
     }
     // MARK: - constraints style

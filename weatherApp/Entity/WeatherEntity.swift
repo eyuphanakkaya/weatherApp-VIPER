@@ -13,12 +13,12 @@ struct WeatherResult: Codable {
     var data : [WeatherData]
 }
 struct WeatherData: Codable {
-    let app_max_temp: Double
-    let app_min_temp: Double
+    var app_max_temp: Double
+    var app_min_temp: Double
     let clouds: Int
     let clouds_hi: Int
     let valid_date: String
-    let temp: Double
+    var temp: Double
     let rh: Int
     let weather: Weather
     let wind_spd: Double
