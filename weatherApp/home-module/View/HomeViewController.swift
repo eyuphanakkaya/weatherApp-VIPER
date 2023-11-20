@@ -12,7 +12,6 @@ import Kingfisher
 class HomeViewController: UIViewController,CLLocationManagerDelegate {
     
     // MARK: -  components
-   
     @IBOutlet weak var collectionView: UICollectionView!
     @IBOutlet weak var lowDegreeLabel: UILabel!
     @IBOutlet weak var highDegreeLabel: UILabel!
@@ -36,16 +35,21 @@ class HomeViewController: UIViewController,CLLocationManagerDelegate {
         fetchLocation()
         HomeRouter.createModule(ref: self)
     }
-    
+    // MARK: - button actions
     @IBAction func changeDegreeStatusButton(_ sender: Any) {
         isDegree.toggle()
         degreesLabel.text = isDegree ? "\(Int(weatherLists[0].temp)) C°" : "\(Int(celsiusToFahrenheit(Int(weatherLists[0].temp)))) F°"
-        highDegreeLabel.text = isDegree ? "H: \(Int(weatherLists[0].app_max_temp))°" : "H: \(Int(celsiusToFahrenheit(Int(weatherLists[0].app_max_temp))))°"
-        lowDegreeLabel.text = isDegree ? "L: \(Int(weatherLists[0].app_min_temp))°" : "L: \(Int(celsiusToFahrenheit(Int(weatherLists[0].app_min_temp))))°"
+        highDegreeLabel.text = isDegree ? "H: \(Int(weatherLists[0].app_max_temp)) C°" : "H: \(Int(celsiusToFahrenheit(Int(weatherLists[0].app_max_temp)))) F°"
+        lowDegreeLabel.text = isDegree ? "L: \(Int(weatherLists[0].app_min_temp)) C°" : "L: \(Int(celsiusToFahrenheit(Int(weatherLists[0].app_min_temp)))) F°"
         tableView.reloadData()
         collectionView.reloadData()
         
     }
+    // MARK: - celsiusToFahrenheit settings
+    func celsiusToFahrenheit(_ celsius: Int) -> Int {
+        return (celsius * 9/5) + 32
+    }
+    // MARK: - days settings
     func getTodayAndTomorrow() -> (today: String, tomorrow: String) {
         let today = Date()
         dateFormatter.dateFormat = "yyyy-MM-dd"
@@ -58,13 +62,10 @@ class HomeViewController: UIViewController,CLLocationManagerDelegate {
             let tomorrowString = dateFormatter.string(from: tomorrowDate)
             return (todayString, tomorrowString)
         } else {
-            fatalError("Yarın hesaplanamıyor.")
+            fatalError("error")
         }
     }
 
-    func celsiusToFahrenheit(_ celsius: Int) -> Int {
-        return (celsius * 9/5) + 32
-    }
     func formatTime(_ dateString: String) -> String {
         dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
         if let date = dateFormatter.date(from: dateString) {
@@ -78,13 +79,13 @@ class HomeViewController: UIViewController,CLLocationManagerDelegate {
         
         return ""
     }
+    // MARK: - background Value
     func backgroundValue() {
         DispatchQueue.main.async {
             if self.weatherLists[0].weather.description.lowercased().contains("clouds") {
                 self.view.backgroundColor = #colorLiteral(red: 0.1116948351, green: 0.1420827508, blue: 0.1714244187, alpha: 1)
             } else if self.weatherLists[0].weather.description.lowercased().contains("rain"){
                 self.view.backgroundColor = #colorLiteral(red: 0.0683510676, green: 0.2588295937, blue: 0.5978077054, alpha: 1)
-                self.view.backgroundColor = #colorLiteral(red: 0.1922393739, green: 0.6801093221, blue: 0.8735067844, alpha: 1)
             } else if self.weatherLists[0].weather.description.lowercased().contains("snow") {
                 self.view.backgroundColor = #colorLiteral(red: 0.1116948351, green: 0.1420827508, blue: 0.1714244187, alpha: 1)
             } else if self.weatherLists[0].weather.description.lowercased().contains("sleet") {

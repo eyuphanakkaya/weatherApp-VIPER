@@ -55,7 +55,7 @@ extension HomeViewController : UICollectionViewDataSource,UICollectionViewDelega
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let index = hourlyLists[indexPath.row]
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "hourlyWeatherCell", for: indexPath) as! WeatherCollectionViewCell
-        cell.weatherValueLabel.text = isDegree ?  "\(Int(index.temp!))C°" : "\(Int(celsiusToFahrenheit(Int(index.temp!))))"
+        cell.weatherValueLabel.text = isDegree ?  "\(Int(index.temp!)) C°" : "\(Int(celsiusToFahrenheit(Int(index.temp!)))) F°"
         cell.weatherDayLabel.text = formatTime(index.timestamp_local!)
         let imageUrl =  URL(string: "https://www.weatherbit.io/static/img/icons/\(index.weather!.icon).png")
         cell.weatherImage.frame.size = CGSize(width: 25, height: 25)
