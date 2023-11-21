@@ -18,6 +18,5 @@ struct HourlyWeatherData: Codable {
 }
 struct WeatherHourly: Codable {
     let description: String
-    let code: Int
     let icon: String
 }

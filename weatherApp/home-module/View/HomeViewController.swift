@@ -8,6 +8,7 @@
 import UIKit
 import CoreLocation
 import Kingfisher
+import CoreData
 
 class HomeViewController: UIViewController,CLLocationManagerDelegate {
     
@@ -23,6 +24,12 @@ class HomeViewController: UIViewController,CLLocationManagerDelegate {
     @IBOutlet weak var customCollectionView: UIView!
     var isDegree = true
     var weatherLists = [WeatherData]()
+    var weatherList2 = [WeatherData]()
+//    {
+//        didSet {
+//            sendViewWeather(weatherList: weatherList2)
+//        }
+//    }
     var hourlyLists = [HourlyWeatherData]()
     var locationManager = CLLocationManager()
     var homePresenter: ViewToPresenterHomeProtocol?
@@ -34,6 +41,15 @@ class HomeViewController: UIViewController,CLLocationManagerDelegate {
         componentStyle()
         fetchLocation()
         HomeRouter.createModule(ref: self)
+        
+        
+    }
+    override func viewWillAppear(_ animated: Bool) {
+        DispatchQueue.main.async {
+            let result =  self.loadWeatherDataFromUserDefaults()
+            //             print(result)
+        }
+        
     }
     // MARK: - button actions
     @IBAction func changeDegreeStatusButton(_ sender: Any) {
@@ -55,9 +71,9 @@ class HomeViewController: UIViewController,CLLocationManagerDelegate {
         dateFormatter.dateFormat = "yyyy-MM-dd"
         
         let todayString = dateFormatter.string(from: today)
-
+        
         let calendar = Calendar.current
-
+        
         if let tomorrowDate = calendar.date(byAdding: .day, value: 1, to: today) {
             let tomorrowString = dateFormatter.string(from: tomorrowDate)
             return (todayString, tomorrowString)
@@ -65,7 +81,7 @@ class HomeViewController: UIViewController,CLLocationManagerDelegate {
             fatalError("error")
         }
     }
-
+    
     func formatTime(_ dateString: String) -> String {
         dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
         if let date = dateFormatter.date(from: dateString) {
@@ -103,10 +119,83 @@ class HomeViewController: UIViewController,CLLocationManagerDelegate {
             highDegreeLabel.text = "H: \(Int(result.data[0].app_max_temp))°"
             lowDegreeLabel.text = "L: \(Int(result.data[0].app_min_temp))°"
             weatherValueLabel.text = result.data[0].weather.description
+            self.weatherList2 = result.data
+            saveDataToUserDefaults(result: result)
+
             homePresenter?.hourlyeWeathers(lat: lat, lon: lon, endDate: getTodayAndTomorrow().tomorrow, startDate: getTodayAndTomorrow().today)
-            backgroundValue()
+            //                backgroundValue()
         })
     }
+    func saveDataToUserDefaults(result: WeatherResult) {
+        // UserDefaults nesnesini al
+        let userDefaults = UserDefaults.standard
+        
+        // Veriyi Codable olarak JSON'a dönüştür
+        let encoder = JSONEncoder()
+        if let encodedData = try? encoder.encode(result) {
+            // Dönüştürülmüş veriyi UserDefaults'e kaydet
+            userDefaults.set(encodedData, forKey: "weatherDataKey")
+            
+            // Değişiklikleri kaydet
+            userDefaults.synchronize()
+        }
+    }
+    func loadWeatherDataFromUserDefaults() -> WeatherResult? {
+        // UserDefaults nesnesini al
+        let userDefaults = UserDefaults.standard
+        
+        // UserDefaults'ten veriyi çek
+        if let savedData = userDefaults.data(forKey: "weatherDataKey") {
+            // JSON'dan WeatherResult tipine dönüştür
+            let decoder = JSONDecoder()
+            if let decodedData = try? decoder.decode(WeatherResult.self, from: savedData) {
+                return decodedData
+            }
+        }
+        
+        return nil
+    }
+    
+    //    func coreDataActions(result : WeatherResult) {
+    //          let appDelegate = UIApplication.shared.delegate as! AppDelegate
+    //          let context = appDelegate.persistentContainer.viewContext
+    //        var weatherResult = Weather_Result(context: context)
+    ////        weatherResult.data = result.data
+    //        var deneme = Weather_Data(context: context)
+    //        deneme.myWeatherResult
+    ////        saveWeather.cityName = result.city_name
+    ////        saveWeather.data = result.data as NSObject as! [Weather_Data]
+    //          do {
+    //            try context.save()
+    //            self.getData()
+    //          }catch {
+    //            print("error")
+    //          }
+    //        }
+    //
+    //    func getData() {
+    //
+    //        let appDelegate = UIApplication.shared.delegate as! AppDelegate
+    //        let context = appDelegate.persistentContainer.viewContext
+    //        let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "Weather_Result")
+    //        fetchRequest.returnsObjectsAsFaults = false
+    //        do {
+    //            let result = try context.fetch(fetchRequest)
+    //            if result.count > 0 {
+    //                for results in result as! [NSManagedObject] {
+    //                    print(results.value(forKey: "cityName"))
+    //                    print(results.value(forKey: "data"),"---------------------")
+    //
+    //                }
+    //            }
+    //
+    //        }catch {
+    //            print("error")
+    //        }
+    ////        self.personTableview.reloadData()
+    ////        print(nameArray)
+    ////        print(ageArray)
+    //    }
     // MARK: - constraints style
     func componentStyle() {
         view.backgroundColor = #colorLiteral(red: 0.2392156869, green: 0.6745098233, blue: 0.9686274529, alpha: 1)
@@ -154,5 +243,8 @@ class HomeViewController: UIViewController,CLLocationManagerDelegate {
             fetchWeatherApi(lat: latitude.description, lon: longitude.description)
         }
     }
+    
+    
 }
+
 

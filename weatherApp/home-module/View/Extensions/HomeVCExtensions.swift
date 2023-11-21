@@ -14,7 +14,7 @@ extension HomeViewController: UITableViewDelegate,UITableViewDataSource {
         return weatherLists.prefix(7).count
     }
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let index = weatherLists[indexPath.row]
+        let index = Globals.shared.valuesOne ? weatherLists[indexPath.row] : weatherList2[indexPath.row]
         let cell = tableView.dequeueReusableCell(withIdentifier: "weatherCell", for: indexPath) as! WeatherTableViewCell
         
         cell.maxDegreeLabel.text = isDegree ? "\(Int(index.app_max_temp))°" : "\(celsiusToFahrenheit(Int(index.app_max_temp)))°"
@@ -55,7 +55,9 @@ extension HomeViewController : UICollectionViewDataSource,UICollectionViewDelega
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let index = hourlyLists[indexPath.row]
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "hourlyWeatherCell", for: indexPath) as! WeatherCollectionViewCell
-        cell.weatherValueLabel.text = isDegree ?  "\(Int(index.temp!)) C°" : "\(Int(celsiusToFahrenheit(Int(index.temp!)))) F°"
+        if let temp = index.temp {
+            cell.weatherValueLabel.text = isDegree ?  "\(Int(temp)) C°" : "\(Int(celsiusToFahrenheit(Int(temp)))) F°"
+        }
         cell.weatherDayLabel.text = formatTime(index.timestamp_local!)
         let imageUrl =  URL(string: "https://www.weatherbit.io/static/img/icons/\(index.weather!.icon).png")
         cell.weatherImage.frame.size = CGSize(width: 25, height: 25)
